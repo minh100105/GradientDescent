@@ -1,52 +1,66 @@
+import matplotlib.pyplot as plt
 import numpy as np
-from math_function import Function
-from function_plot import plot_changes, plot_function
-from utils import clear_graph_folder, create_gifs
+from math_function import LossFunction
+from function_plot import plot_function_contour, plot_changes
+from utilis import clear_graph_folder, create_gifs
+import math
 
-def gradient_descent_process(starting_point, learning_rate, precision, max_iterations):
+
+def gradient_descent_process(starting_point_threshold, starting_point_coefficient, learning_rate, precision, max_iterations):
     clear_graph_folder()
 
-    x_old = starting_point
-    #Initialize the counter i:
+    threshold_old = starting_point_threshold
+    coefficient_old = starting_point_coefficient
+
     i = 0
-    #Create a function object f:
-    f = Function()
-    #Use linspace to sample 100 x values between -10 and 10
-    x = np.linspace(-5,5,100)
-    # Plot the function
-    plot_function(f,x)
-    
-    #Iterate until the change in x is less than precision or we hit the maximum number
-    
+
+    f = LossFunction()
+
+    threshold = np.linspace(-5, 5, 100)
+    coefficient = np.linspace(-5, 5, 100)
+
+    plot_function_contour(f, threshold, coefficient)
+
+
     while True:
-        # Print out the number of current iteration
-        print("Interation:",i)
-        # Print out the old x value:
-        print("x_old:", x_old)
-        # Get the gradient at our current position
-        gradient = f.deriv(x_old)
-        # Print out the gradient
-        print("gradient:", gradient)
-        # Move x_old by the negative of the gradient times the learning rate
-        x_new = x_old - (gradient * learning_rate)
-        # Print out the new x value
-        print("x_new:", x_new)
-        # Plot the function and new x value
-        plot_changes(f, x, x_old, x_new, "" + str(i))
-        # Check if the difference between the old x and new x is less than precision
-        if abs(x_new -x_old) < precision:
-            print("Maximum iterations exceeded")
+
+        print("Iteration:", i)
+
+        print("threshold_old:", threshold_old)
+
+        print("coefficient_old:", coefficient_old)
+        coefficient_gradient = f.deriv(threshold_old, coefficient_old)[0]
+        threshold_gradient = f.deriv(threshold_old, coefficient_old)[1]
+        
+
+        print("threshold_gradient:", threshold_gradient)
+        print("coefficient_gradient:", coefficient_gradient)
+
+        coefficient_new = coefficient_old - (coefficient_gradient * learning_rate)
+        threshold_new = threshold_old - (threshold_gradient * learning_rate)  
+
+
+        print("threshold_new:", threshold_new)
+        print("coefficient_new:", coefficient_new)
+        print("lossfunction: ", f.value(threshold_new, coefficient_new))
+        
+
+        plot_changes(f, threshold, threshold_old, threshold_new, coefficient_old, coefficient_new, "" + str(i))
+
+        if math.sqrt((threshold_new - threshold_old)**2 + (coefficient_new - coefficient_old)**2) < precision:
+            print("Precision reached!")
             break
-        # Set the old x to the new x
-        x_old = x_new
-        # Increment the iteration counter
+
+        if i > max_iterations:
+            print("Maximum iterations exceeded!")
+            break
+
+        threshold_old = threshold_new
+        coefficient_old = coefficient_new
+
         i += 1
+
     create_gifs()
 
-gradient_descent_process(starting_point=4, learning_rate=0.2, precision=0.000001, max_iterations=100)
-    
 
-
-        
-        
-        
+gradient_descent_process(0.5, 0.5, 0.5, 0.0001, 150)
